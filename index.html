@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Month at a Glance</title>
+  <meta name="description" content="A fast, focused monthly planner for busy students." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #152230;
+      --muted: #75808c;
+      --line: #dce4e8;
+      --paper: #f8faf9;
+      --white: #ffffff;
+      --navy: #182936;
+      --teal: #2e9991;
+      --teal-soft: #e1f1ee;
+      --coral: #f0715c;
+      --yellow: #f5c968;
+      --lavender: #8c7cc4;
+      --shadow: 0 22px 55px rgba(24, 41, 54, .12);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: "DM Sans", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    .app-shell { min-height: 100vh; display: block; }
+
+    .sidebar {
+      width: 248px;
+      flex: 0 0 248px;
+      background: var(--navy);
+      color: #f5faf9;
+      padding: 30px 22px 25px;
+      display: flex;
+      flex-direction: column;
+    }
+    .brand { display: flex; align-items: center; gap: 11px; margin: 0 8px 54px; }
+    .brand-mark {
+      width: 34px; height: 34px; border-radius: 10px;
+      display: grid; place-items: center;
+      background: var(--coral); color: white;
+      font-family: "Space Grotesk", sans-serif; font-weight: 700; font-size: 19px;
+    }
+    .brand-name { font-family: "Space Grotesk", sans-serif; font-size: 15px; letter-spacing: -.3px; }
+    .side-label { color: #7f949e; text-transform: uppercase; font: 500 10px "DM Mono", monospace; letter-spacing: 1.5px; margin: 0 12px 15px; }
+    .side-nav { display: grid; gap: 8px; }
+    .side-nav button {
+      width: 100%; border: 0; background: transparent; color: #a5b6bc;
+      text-align: left; padding: 12px 12px; border-radius: 8px; display: flex; align-items: center; gap: 11px;
+      transition: .2s ease; font-size: 13px;
+    }
+    .side-nav button:hover, .side-nav button.active { background: #263b48; color: white; }
+    .side-nav button.active { box-shadow: inset 3px 0 var(--coral); }
+    .nav-icon { width: 18px; text-align: center; font-size: 16px; opacity: .92; }
+    .sidebar-bottom { margin-top: auto; }
+    .tip-card { background: #203844; border-radius: 10px; padding: 16px; margin: 0 4px 20px; }
+    .tip-card .tip-icon { color: var(--yellow); font-size: 17px; margin-bottom: 11px; }
+    .tip-card p { margin: 0; color: #b7c9cc; font-size: 11px; line-height: 1.55; }
+    .tip-card strong { display: block; color: white; font-size: 12px; margin-bottom: 5px; }
+    .student { border-top: 1px solid #2d424e; padding: 18px 8px 0; display: flex; align-items: center; gap: 10px; }
+    .avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--yellow); color: #4b3b1d; display: grid; place-items: center; font-size: 11px; font-weight: 700; }
+    .student p { margin: 0; font-size: 12px; }
+    .student small { display: block; color: #7f949e; margin-top: 2px; font-size: 10px; }
+
+    .main { max-width: none; width: 100%; height: 100vh; min-width: 0; margin: 0; padding: 30px 42px 32px; display: flex; flex-direction: column; overflow: hidden; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; gap: 20px; margin-bottom: 22px; }
+    .eyebrow { color: var(--teal); font: 500 10px "DM Mono", monospace; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 10px; }
+    h1 { margin: 0; font: 600 clamp(28px, 3vw, 38px)/1.1 "Space Grotesk", sans-serif; letter-spacing: -1.5px; }
+    .subhead { margin: 10px 0 0; color: var(--muted); font-size: 13px; }
+    .top-actions { display: flex; gap: 10px; align-items: center; }
+    .today-btn, .add-btn { border-radius: 7px; padding: 10px 15px; font-size: 12px; font-weight: 600; }
+    .today-btn { border: 1px solid var(--line); color: var(--ink); background: var(--white); }
+    .today-btn:hover { border-color: var(--teal); color: var(--teal); }
+    .share-btn { border: 1px solid var(--line); color: var(--teal); background: var(--white); border-radius: 7px; padding: 10px 13px; font-size: 12px; font-weight: 600; }
+    .share-btn:hover { border-color: var(--teal); background: var(--teal-soft); }
+    .add-btn { border: 1px solid var(--coral); background: var(--coral); color: white; box-shadow: 0 4px 10px rgba(240, 113, 92, .2); }
+    .add-btn:hover { background: #db614e; }
+    .add-btn span { font-size: 18px; line-height: 0; vertical-align: -2px; margin-right: 4px; font-weight: 400; }
+
+    .topbar h1 { font-size: clamp(24px, 3vw, 34px); letter-spacing: -1px; }
+    .month-nav { display: flex; gap: 7px; }
+    .month-nav button { width: 33px; height: 30px; border: 1px solid var(--line); background: white; color: var(--ink); border-radius: 6px; font-size: 16px; }
+    .month-nav button:hover { border-color: var(--teal); color: var(--teal); }
+
+    .calendar-section { flex: 1; min-height: 0; display: flex; }
+    .calendar-wrap { flex: 1; min-height: 0; background: var(--white); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 8px 30px rgba(24, 41, 54, .04); overflow: hidden; display: flex; flex-direction: column; }
+    .weekdays, .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); }
+    .weekdays { flex: 0 0 auto; background: #f5f8f8; border-bottom: 1px solid var(--line); }
+    .weekday { padding: 12px 15px 10px; color: var(--muted); text-transform: uppercase; font: 500 10px "DM Mono", monospace; letter-spacing: 1px; }
+    .weekday.weekend { color: var(--coral); }
+    .calendar-grid { flex: 1; min-height: 0; grid-template-rows: repeat(6, minmax(0, 1fr)); }
+    .day {
+      min-height: 0; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line);
+      padding: 11px 11px 8px; position: relative; background: white; transition: background .15s ease;
+    }
+    .day:nth-child(7n) { border-right: 0; }
+    .day:nth-last-child(-n+7) { border-bottom: 0; }
+    .day:hover { background: #fbfdfc; }
+    .day.dimmed { background: #fafbfb; color: #b7c1c6; }
+    .day.dimmed .day-number { color: #b7c1c6; }
+    .day-number { width: 25px; height: 25px; display: grid; place-items: center; border-radius: 50%; font-size: 12px; color: #53616a; margin-bottom: 7px; }
+    .day.today .day-number { background: var(--coral); color: white; font-weight: 700; }
+    .day.clickable { cursor: pointer; }
+    .event-chip { border-radius: 4px; padding: 6px 7px; margin-bottom: 5px; border-left: 3px solid; overflow: hidden; cursor: pointer; transition: transform .15s ease, box-shadow .15s ease; }
+    .event-chip:hover { transform: translateY(-1px); box-shadow: 0 4px 10px rgba(24, 41, 54, .1); }
+    .event-chip.teal { background: var(--teal-soft); border-color: var(--teal); color: #276d69; }
+    .event-chip.coral { background: #fff0ec; border-color: var(--coral); color: #a74d3d; }
+    .event-chip.yellow { background: #fff7de; border-color: var(--yellow); color: #8e6b22; }
+    .event-chip.lavender { background: #f0edfb; border-color: var(--lavender); color: #62539b; }
+    .event-chip.custom, .day-event-row.custom { background: color-mix(in srgb, var(--event-color) 14%, white); border-color: var(--event-color); color: color-mix(in srgb, var(--event-color) 72%, #152230); }
+    .event-chip strong { display: block; font-size: 11px; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .event-chip small { display: block; font: 10px "DM Mono", monospace; margin-top: 3px; opacity: .8; }
+    .more-btn { position: absolute; left: 8px; bottom: 4px; display: block; border: 0; background: transparent; color: var(--teal); font-size: 10px; padding: 2px 4px; cursor: pointer; }
+    .more-btn:hover { color: var(--coral); text-decoration: underline; }
+
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(17, 31, 40, .42); display: grid; place-items: center; padding: 20px; z-index: 10; opacity: 0; pointer-events: none; transition: opacity .2s ease; }
+    .modal-backdrop.open { opacity: 1; pointer-events: auto; }
+    .modal { width: min(440px, 100%); background: white; border-radius: 12px; box-shadow: var(--shadow); transform: translateY(10px); transition: transform .2s ease; overflow: hidden; }
+    .modal-backdrop.open .modal { transform: translateY(0); }
+    .day-events-modal { width: min(390px, 100%); }
+    .day-event-list { padding: 8px 24px 22px; max-height: min(420px, 55vh); overflow: auto; }
+    .day-event-row { width: 100%; border: 1px solid var(--line); border-left: 3px solid var(--teal); border-radius: 6px; background: white; color: var(--ink); padding: 11px 12px; margin-top: 9px; text-align: left; }
+    .day-event-row:hover { background: #f7fbfa; border-color: var(--teal); }
+    .day-event-row strong { display: block; font-size: 12px; }
+    .day-event-row small { display: block; color: var(--muted); font: 10px "DM Mono", monospace; margin-top: 4px; }
+    .day-event-empty { color: var(--muted); font-size: 12px; padding: 14px 0 4px; }
+    .share-modal { width: min(950px, 100%); }
+    .share-intro { color: var(--muted); font-size: 12px; line-height: 1.5; margin: 0; }
+    .share-preview { padding: 14px 24px 0; }
+    .share-preview-note { color: var(--muted); font-size: 11px; margin: 0 0 10px; }
+    .share-series-options { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 12px; }
+    .share-series-option { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); border-radius: 5px; background: #f8faf9; padding: 7px 9px; cursor: pointer; }
+    .share-series-option:hover { border-color: var(--teal); background: var(--teal-soft); }
+    .share-series-option input { accent-color: var(--teal); width: 14px; height: 14px; }
+    .share-series-option span { max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; }
+    .share-preview-weekdays, .share-preview-grid { display: grid; grid-template-columns: repeat(7, 1fr); }
+    .share-preview-weekdays { background: #f5f8f8; border: 1px solid var(--line); border-bottom: 0; border-radius: 6px 6px 0 0; }
+    .share-preview-weekdays span { color: var(--muted); padding: 7px 4px 6px; text-align: center; text-transform: uppercase; font: 500 8px "DM Mono", monospace; }
+    .share-preview-grid { border: 1px solid var(--line); border-radius: 0 0 6px 6px; overflow: hidden; }
+    .share-preview-day { min-height: 58px; padding: 5px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); background: white; overflow: auto; }
+    .share-preview-day:nth-child(7n) { border-right: 0; }
+    .share-preview-day:nth-last-child(-n+7) { border-bottom: 0; }
+    .share-preview-day.empty { background: #fafbfb; }
+    .share-preview-number { color: #637079; font-size: 9px; margin-bottom: 3px; }
+    .share-preview-number.today { color: white; background: var(--coral); border-radius: 50%; width: 18px; height: 18px; display: grid; place-items: center; }
+    .share-preview-event { width: 100%; border: 0; border-left: 2px solid var(--teal); border-radius: 3px; background: var(--teal-soft); color: #276d69; padding: 3px 4px; margin-top: 2px; overflow: hidden; text-align: left; font-size: 9px; white-space: nowrap; text-overflow: ellipsis; cursor: pointer; }
+    .share-preview-event:hover { outline: 2px solid rgba(46, 153, 145, .3); }
+    .share-preview-event.is-hidden { background: #eef1f2; border-color: #8e9aa0; color: #65727a; }
+    .share-preview-event.custom { background: color-mix(in srgb, var(--event-color) 14%, white); border-color: var(--event-color); color: color-mix(in srgb, var(--event-color) 72%, #152230); }
+    .share-footer { padding: 14px 24px 24px; }
+    .share-link-row { display: flex; gap: 7px; margin-top: 12px; }
+    .share-link-row.hidden { display: none; }
+    .share-link-row input { min-width: 0; flex: 1; border: 1px solid var(--line); background: #f6f8f8; color: var(--muted); border-radius: 5px; padding: 9px 10px; font: 10px "DM Mono", monospace; }
+    .copy-btn, .generate-btn { border: 0; border-radius: 6px; background: var(--teal); color: white; font-size: 11px; font-weight: 700; padding: 10px 13px; white-space: nowrap; }
+    .copy-btn:hover, .generate-btn:hover { background: #267f79; }
+    .shared-view #newEventButton, .shared-view #shareButton { display: none; }
+    .shared-view #todayButton, .shared-view .month-nav { display: none; }
+    .modal-head { padding: 22px 24px 18px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: flex-start; }
+    .modal-kicker { color: var(--teal); font: 500 10px "DM Mono", monospace; letter-spacing: 1.4px; text-transform: uppercase; margin-bottom: 7px; }
+    .modal h3 { margin: 0; font: 600 21px "Space Grotesk", sans-serif; letter-spacing: -.5px; }
+    .close-btn { border: 0; background: transparent; color: var(--muted); font-size: 24px; line-height: 18px; padding: 0; }
+    .form { padding: 20px 24px 24px; }
+    .field { margin-bottom: 17px; }
+    .field:last-of-type { margin-bottom: 0; }
+    .field label { display: block; color: #697680; font: 500 10px "DM Mono", monospace; letter-spacing: .7px; text-transform: uppercase; margin-bottom: 7px; }
+    .field input, .field select { width: 100%; border: 1px solid #cad5d9; color: var(--ink); background: white; border-radius: 6px; padding: 11px 12px; font-size: 13px; outline: none; }
+    .field input:focus, .field select:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(46, 153, 145, .12); }
+    .color-field label span { color: var(--muted); text-transform: none; letter-spacing: 0; font-family: "DM Sans", sans-serif; }
+    .color-input-row { display: flex; align-items: center; gap: 10px; }
+    .color-input-row input[type="color"] { width: 42px; height: 34px; padding: 3px; cursor: pointer; }
+    .color-input-row small { color: var(--muted); font-size: 11px; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .repeat-extra { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+    .repeat-extra.hidden { display: none; }
+    .repeat-day-actions { margin-top: 14px; }
+    .repeat-day-actions.hidden { display: none; }
+    .repeat-day-actions label { display: block; color: #697680; font: 500 10px "DM Mono", monospace; letter-spacing: .7px; text-transform: uppercase; margin-bottom: 7px; }
+    .repeat-choice-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
+    .repeat-choice { border: 1px solid #cad5d9; background: white; color: #56636a; border-radius: 5px; padding: 9px 5px; font-size: 11px; }
+    .repeat-choice:hover, .repeat-choice.selected { border-color: var(--teal); background: var(--teal-soft); color: #276d69; }
+    .modal-actions { display: flex; align-items: center; justify-content: space-between; margin-top: 24px; }
+    .delete-btn, .delete-series-btn, .delete-one-btn { border: 0; background: transparent; color: var(--coral); font-size: 12px; padding: 8px 0; display: none; }
+    .delete-btn.visible { display: block; }
+    .delete-series-btn.visible, .delete-one-btn.visible { display: block; }
+    .delete-actions { display: flex; gap: 13px; align-items: center; }
+    .save-btn { border: 0; background: var(--coral); color: white; border-radius: 6px; padding: 11px 20px; font-size: 12px; font-weight: 700; }
+    .save-btn:hover { background: #db614e; }
+    .empty-state { text-align: center; padding: 25px 0 12px; color: var(--muted); font-size: 12px; }
+
+    @media (max-width: 900px) {
+      .sidebar { width: 76px; flex-basis: 76px; padding: 22px 12px; }
+      .brand { margin: 0 auto 45px; }
+      .brand-name, .side-label, .side-nav button span:not(.nav-icon), .tip-card, .student p { display: none; }
+      .side-nav button { justify-content: center; padding: 12px 5px; }
+      .student { justify-content: center; padding-left: 0; padding-right: 0; }
+      .main { padding: 24px 25px; }
+    }
+    @media (max-width: 640px) {
+      .app-shell { display: block; }
+      .sidebar { width: 100%; height: 61px; padding: 11px 15px; flex-direction: row; align-items: center; }
+      .brand { margin: 0; }
+      .side-nav { display: flex; margin-left: auto; }
+      .side-nav button { padding: 8px 10px; }
+      .sidebar-bottom { display: none; }
+      .topbar { flex-wrap: wrap; margin-bottom: 16px; }
+      .top-actions { justify-content: flex-end; flex-wrap: wrap; }
+      .weekday { padding: 10px 4px; text-align: center; font-size: 8px; letter-spacing: .5px; }
+      .day { padding: 6px 4px 5px; }
+      .day-number { margin: 0 auto 5px; font-size: 11px; width: 22px; height: 22px; }
+      .event-chip { padding: 4px 4px; border-left-width: 2px; margin-bottom: 3px; }
+      .event-chip strong { font-size: 9px; }
+      .event-chip small { display: none; }
+      .more { font-size: 8px; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <main class="main">
+      <header class="topbar">
+        <h1 id="monthTitle">October 2026</h1>
+        <div class="top-actions"><button class="today-btn" id="todayButton">Jump to today</button><button class="share-btn" id="shareButton">↗ Share month</button><button class="add-btn" id="newEventButton"><span>＋</span> Add event</button><div class="month-nav"><button id="prevMonth" aria-label="Previous month">‹</button><button id="nextMonth" aria-label="Next month">›</button></div></div>
+      </header>
+
+      <section class="calendar-section" aria-label="Monthly calendar">
+        <div class="calendar-wrap"><div class="weekdays"><div class="weekday">Mon</div><div class="weekday">Tue</div><div class="weekday">Wed</div><div class="weekday">Thu</div><div class="weekday">Fri</div><div class="weekday weekend">Sat</div><div class="weekday weekend">Sun</div></div><div class="calendar-grid" id="calendarGrid"></div></div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal">
+      <div class="modal-head"><div><div class="modal-kicker" id="modalKicker">New event</div><h3 id="modalTitle">Add something to your day</h3></div><button class="close-btn" id="closeModal" aria-label="Close">×</button></div>
+      <form class="form" id="eventForm">
+        <div class="field"><label for="eventName">Event name</label><input id="eventName" required placeholder="e.g. Study group, essay due..." autocomplete="off" /></div>
+        <div class="two-col"><div class="field"><label for="eventDate">Date</label><input type="date" id="eventDate" required /></div><div class="field"><label for="eventTime">Starts at</label><input type="time" id="eventTime" required /></div></div>
+        <div class="field color-field"><label for="eventColor">Color <span>(optional)</span></label><div class="color-input-row"><input type="color" id="eventColor" value="#2e9991" /><small id="colorHint">Leave unchanged for a random color.</small></div></div>
+        <div class="field"><label for="eventRepeat">Repeats</label><select id="eventRepeat"><option value="none">Does not repeat</option><option value="daily">Every day</option><option value="weekdays">Weekdays</option><option value="weekends">Weekends</option><option value="weekly">Every week</option><option value="monthly">Every month</option></select><div class="repeat-day-actions hidden" id="repeatDayActions"><label>Quick set</label><div class="repeat-choice-group"><button type="button" class="repeat-choice" data-repeat-mode="weekdays">Weekdays</button><button type="button" class="repeat-choice" data-repeat-mode="weekends">Weekends</button><button type="button" class="repeat-choice" data-repeat-mode="daily">All days</button></div></div><div class="repeat-extra hidden" id="repeatExtra"><div class="field"><label for="repeatUntil">Stops repeating</label><input type="date" id="repeatUntil" /></div><div></div></div></div>
+        <div class="modal-actions"><div class="delete-actions"><button type="button" class="delete-btn" id="deleteEvent">Delete event</button><button type="button" class="delete-one-btn" id="deleteOne">Delete just this day</button><button type="button" class="delete-series-btn" id="deleteFuture">Delete this and future</button></div><button type="submit" class="save-btn">Save event</button></div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="dayEventsBackdrop" role="dialog" aria-modal="true" aria-labelledby="dayEventsTitle">
+    <div class="modal day-events-modal">
+      <div class="modal-head"><div><div class="modal-kicker">Day view</div><h3 id="dayEventsTitle">Events</h3></div><button class="close-btn" id="closeDayEvents" aria-label="Close">×</button></div>
+      <div class="day-event-list" id="dayEventList"></div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="shareBackdrop" role="dialog" aria-modal="true" aria-labelledby="shareTitle">
+    <div class="modal share-modal">
+      <div class="modal-head"><div><div class="modal-kicker">View-only link</div><h3 id="shareTitle">Share October 2026</h3></div><button class="close-btn" id="closeShare" aria-label="Close">×</button></div>
+      <div class="share-preview"><p class="share-preview-note">Uncheck an event to hide its entire series. You can also click individual occurrences below.</p><div class="share-series-options" id="shareSeriesOptions"></div><div class="share-preview-weekdays"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div><div class="share-preview-grid" id="sharePreviewGrid"></div></div>
+      <div class="share-footer"><button class="generate-btn" id="generateShare">Create share URL</button><div class="share-link-row hidden" id="shareLinkRow"><input id="shareUrl" readonly aria-label="Generated share link" /><button class="copy-btn" id="copyShare">Copy</button></div></div>
+    </div>
+  </div>
+
+  <script>
+    const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const colors = ['teal','coral','yellow','lavender'];
+    const paletteHex = { teal: '#2e9991', coral: '#f0715c', yellow: '#f5c968', lavender: '#8c7cc4' };
+    const today = new Date();
+    let viewDate = new Date(today.getFullYear(), today.getMonth(), 1);
+    let editingId = null;
+    let editingDateKey = null;
+    let pickedColor = false;
+    let shareHiddenOccurrences = new Set();
+    let shareHiddenEvents = new Set();
+    const starterEvents = [];
+    const storageKey = 'month-glance-events-v2';
+    let events = JSON.parse(localStorage.getItem(storageKey) || 'null') || starterEvents;
+    const pageParams = new URLSearchParams(window.location.search);
+    const isSharedView = pageParams.get('view') === '1' || pageParams.has('event1');
+    if (isSharedView) {
+      const sharedYear = Number(pageParams.get('year')) || today.getFullYear();
+      const sharedMonth = Math.max(0, Math.min(11, (Number(pageParams.get('month')) || today.getMonth() + 1) - 1));
+      viewDate = new Date(sharedYear, sharedMonth, 1);
+      events = [];
+      pageParams.forEach((value, key) => {
+        if (!key.startsWith('event')) return;
+        const parts = value.split('|');
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(parts[0])) return;
+        events.push({ id: `shared-${key}`, name: parts[1] || 'Busy', date: parts[0], time: parts[2] || '', repeat: 'none', color: parts[1] === 'Busy' ? 'teal' : (parts[3] || colors[events.length % colors.length]) });
+      });
+      document.body.classList.add('shared-view');
+    }
+
+    const $ = id => document.getElementById(id);
+    const pad = n => String(n).padStart(2, '0');
+    const dateKey = date => `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}`;
+    const formatTime = value => { if (!value) return ''; const [hour, minute] = value.split(':').map(Number); const suffix = hour >= 12 ? 'PM' : 'AM'; return `${hour % 12 || 12}:${pad(minute)} ${suffix}`; };
+    const dateFromKey = key => { const [y,m,d] = key.split('-').map(Number); return new Date(y, m-1, d); };
+
+    function occursOn(event, key) {
+      const start = dateFromKey(event.date), target = dateFromKey(key);
+      if (target < start) return false;
+      if (event.until && target > dateFromKey(event.until)) return false;
+      if (event.skipDates && event.skipDates.includes(key)) return false;
+      const diff = Math.round((target - start) / 86400000);
+      if (event.repeat === 'daily') return true;
+      if (event.repeat === 'weekdays') return ![0, 6].includes(target.getDay());
+      if (event.repeat === 'weekends') return [0, 6].includes(target.getDay());
+      if (event.repeat === 'weekly') return diff % 7 === 0;
+      if (event.repeat === 'monthly') return start.getDate() === target.getDate();
+      return key === event.date;
+    }
+
+    function eventsFor(key) { return events.filter(event => occursOn(event, key)).sort((a,b) => a.time.localeCompare(b.time)); }
+
+    function renderCalendar() {
+      const year = viewDate.getFullYear(), month = viewDate.getMonth();
+      $('monthTitle').textContent = `${monthNames[month]} ${year}`;
+      const first = new Date(year, month, 1);
+      const mondayIndex = (first.getDay() + 6) % 7;
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const prevDays = new Date(year, month, 0).getDate();
+      const cells = [];
+      for (let i=0; i<42; i++) {
+        const dayNum = i - mondayIndex + 1;
+        let date, dimmed = false;
+        if (isSharedView && (dayNum < 1 || dayNum > daysInMonth)) { cells.push('<div class="day dimmed"></div>'); continue; }
+        if (dayNum < 1) { date = new Date(year, month - 1, prevDays + dayNum); dimmed = true; }
+        else if (dayNum > daysInMonth) { date = new Date(year, month + 1, dayNum - daysInMonth); dimmed = true; }
+        else date = new Date(year, month, dayNum);
+        const key = dateKey(date), dayEvents = eventsFor(key), isToday = key === dateKey(today);
+        const visibleEventLimit = 1;
+        const chips = dayEvents.slice(0, visibleEventLimit).map(event => `<div class="event-chip ${eventToneClass(event)}"${eventToneStyle(event)} data-event-id="${event.id}"><strong>${escapeHtml(event.name)}</strong>${event.time ? `<small>${formatTime(event.time)}</small>` : ''}</div>`).join('');
+        const more = dayEvents.length > visibleEventLimit ? `<button type="button" class="more-btn" data-more-date="${key}" aria-label="Show all ${dayEvents.length} events on ${formatLongDate(key)}">+${dayEvents.length - visibleEventLimit} more</button>` : '';
+        cells.push(`<div class="day clickable ${dimmed ? 'dimmed' : ''} ${isToday ? 'today' : ''}" data-date="${key}"><div class="day-number">${date.getDate()}</div>${chips}${more}</div>`);
+      }
+      $('calendarGrid').innerHTML = cells.join('');
+      $('calendarGrid').querySelectorAll('.day').forEach(day => day.addEventListener('click', event => { const moreButton = event.target.closest('.more-btn'); const chip = event.target.closest('.event-chip'); if (moreButton) { event.preventDefault(); event.stopPropagation(); openDayEvents(moreButton.dataset.moreDate); } else if (chip && !isSharedView) openModal(day.dataset.date, Number(chip.dataset.eventId)); else if (!isSharedView && !chip) openModal(day.dataset.date); }));
+    }
+
+    function formatLongDate(key) { return dateFromKey(key).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' }); }
+    function openDayEvents(key) {
+      const dayEvents = eventsFor(key);
+      $('dayEventsTitle').textContent = formatLongDate(key);
+      $('dayEventList').innerHTML = dayEvents.length ? dayEvents.map(event => `<button type="button" class="day-event-row ${eventToneClass(event)}"${eventToneStyle(event)} data-event-id="${event.id}"><strong>${escapeHtml(event.name)}</strong>${event.time || event.repeat !== 'none' ? `<small>${event.time ? formatTime(event.time) : ''}${event.repeat !== 'none' ? ` · ${event.repeat}` : ''}</small>` : ''}</button>`).join('') : '<div class="day-event-empty">No events for this day.</div>';
+      $('dayEventsBackdrop').classList.add('open');
+      $('dayEventList').querySelectorAll('.day-event-row').forEach(row => row.addEventListener('click', () => { closeDayEvents(); if (!isSharedView) openModal(key, Number(row.dataset.eventId)); }));
+    }
+    function closeDayEvents() { $('dayEventsBackdrop').classList.remove('open'); }
+
+    const escapeHtml = value => String(value).replace(/[&<>\"]/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[character]));
+    const eventToneClass = event => colors.includes(event.color) ? event.color : 'custom';
+    const eventToneStyle = event => eventToneClass(event) === 'custom' ? ` style="--event-color:${escapeHtml(event.color)}"` : '';
+    function eventsInViewedMonth() {
+      const year = viewDate.getFullYear(), month = viewDate.getMonth(), days = new Date(year, month + 1, 0).getDate();
+      const seen = new Set(), monthEvents = [];
+      for (let day = 1; day <= days; day++) eventsFor(dateKey(new Date(year, month, day))).forEach(event => { if (!seen.has(String(event.id))) { seen.add(String(event.id)); monthEvents.push(event); } });
+      return monthEvents;
+    }
+    function openShareModal() {
+      $('shareTitle').textContent = `Share ${monthNames[viewDate.getMonth()]} ${viewDate.getFullYear()}`;
+      shareHiddenOccurrences = new Set();
+      shareHiddenEvents = new Set();
+      renderShareSeriesOptions();
+      renderSharePreview();
+      $('shareLinkRow').classList.add('hidden');
+      $('shareBackdrop').classList.add('open');
+    }
+    function renderShareSeriesOptions() {
+      const monthEvents = eventsInViewedMonth();
+      $('shareSeriesOptions').innerHTML = monthEvents.length ? monthEvents.map(event => `<label class="share-series-option"><input type="checkbox" data-share-series-id="${escapeHtml(event.id)}" checked /><span>${escapeHtml(event.name)}</span></label>`).join('') : '<span class="day-event-empty">No events in this month yet.</span>';
+      $('shareSeriesOptions').querySelectorAll('input').forEach(input => input.addEventListener('change', () => { const id = input.dataset.shareSeriesId; if (input.checked) shareHiddenEvents.delete(id); else shareHiddenEvents.add(id); renderSharePreview(); }));
+    }
+    function shareOccurrenceKey(event, key) { return `${event.id}::${key}`; }
+    function renderSharePreview() {
+      const year = viewDate.getFullYear(), month = viewDate.getMonth(), first = new Date(year, month, 1), daysInMonth = new Date(year, month + 1, 0).getDate();
+      const mondayIndex = (first.getDay() + 6) % 7, cells = [];
+      for (let i = 0; i < 42; i++) {
+        const dayNum = i - mondayIndex + 1;
+        if (dayNum < 1 || dayNum > daysInMonth) { cells.push('<div class="share-preview-day empty"></div>'); continue; }
+        const date = new Date(year, month, dayNum), key = dateKey(date), isToday = key === dateKey(today);
+        const eventButtons = eventsFor(key).map(event => {
+          const hidden = shareHiddenEvents.has(String(event.id)) || shareHiddenOccurrences.has(shareOccurrenceKey(event, key));
+          const label = hidden ? 'Busy' : event.name;
+          return `<button type="button" class="share-preview-event ${eventToneClass(event)}${hidden ? ' is-hidden' : ''}"${eventToneStyle(event)} data-share-event-id="${escapeHtml(event.id)}" data-share-date="${key}" title="${hidden ? 'Busy' : escapeHtml(event.name)}">${escapeHtml(label)}</button>`;
+        }).join('');
+        cells.push(`<div class="share-preview-day"><div class="share-preview-number ${isToday ? 'today' : ''}">${dayNum}</div>${eventButtons}</div>`);
+      }
+      $('sharePreviewGrid').innerHTML = cells.join('');
+      $('sharePreviewGrid').querySelectorAll('.share-preview-event').forEach(button => button.addEventListener('click', event => { event.stopPropagation(); if (shareHiddenEvents.has(button.dataset.shareEventId)) return; const key = shareOccurrenceKey({ id: button.dataset.shareEventId }, button.dataset.shareDate); if (shareHiddenOccurrences.has(key)) shareHiddenOccurrences.delete(key); else shareHiddenOccurrences.add(key); renderSharePreview(); }));
+    }
+    function closeShareModal() { $('shareBackdrop').classList.remove('open'); }
+    function generateShareLink() {
+      const query = new URLSearchParams();
+      query.set('month', String(viewDate.getMonth() + 1));
+      query.set('year', String(viewDate.getFullYear()));
+      let eventNumber = 1;
+      const year = viewDate.getFullYear(), month = viewDate.getMonth(), days = new Date(year, month + 1, 0).getDate();
+      for (let day = 1; day <= days; day++) {
+        const key = dateKey(new Date(year, month, day));
+        eventsFor(key).forEach(event => {
+          const hidden = shareHiddenEvents.has(String(event.id)) || shareHiddenOccurrences.has(shareOccurrenceKey(event, key));
+          const label = hidden ? 'Busy' : event.name;
+          query.set(`event${eventNumber++}`, `${key}|${String(label).replaceAll('|', '/') }|${hidden ? '' : event.time}|${hidden ? 'teal' : event.color}`);
+        });
+      }
+      query.set('view', '1');
+      const baseUrl = window.location.origin === 'null' ? window.location.href.split('?')[0] : `${window.location.origin}${window.location.pathname}`;
+      $('shareUrl').value = `${baseUrl}?${query.toString()}`;
+      $('shareLinkRow').classList.remove('hidden');
+    }
+    async function copyShareLink() {
+      const input = $('shareUrl');
+      try { await navigator.clipboard.writeText(input.value); $('copyShare').textContent = 'Copied'; setTimeout(() => $('copyShare').textContent = 'Copy', 1400); }
+      catch { input.focus(); input.select(); document.execCommand('copy'); $('copyShare').textContent = 'Copied'; setTimeout(() => $('copyShare').textContent = 'Copy', 1400); }
+    }
+
+    function openModal(dateKeyValue = dateKey(today), eventId = null) {
+      if (isSharedView) return;
+      editingId = eventId;
+      const event = eventId ? events.find(item => item.id === eventId) : null;
+      editingDateKey = event ? (dateKeyValue || event.date) : dateKeyValue;
+      $('modalKicker').textContent = event ? 'Edit event' : 'New event'; $('modalTitle').textContent = event ? 'Make a quick change' : 'Add something to your day';
+      $('eventName').value = event ? event.name : ''; $('eventDate').value = event ? event.date : (dateKeyValue || dateKey(today)); $('eventTime').value = event ? event.time : '09:00'; $('eventRepeat').value = event ? event.repeat : 'none'; $('repeatUntil').value = event?.until || '';
+      $('eventColor').value = event ? (event.color?.startsWith('#') ? event.color : paletteHex[event.color]) : paletteHex.teal; pickedColor = !!event; $('colorHint').textContent = event ? 'Keep current color or choose a new one.' : 'Leave unchanged for a random color.';
+      updateRepeatControls();
+      $('deleteEvent').classList.toggle('visible', !!event && event.repeat === 'none'); $('deleteOne').classList.toggle('visible', !!event && event.repeat !== 'none'); $('deleteFuture').classList.toggle('visible', !!event && event.repeat !== 'none'); $('modalBackdrop').classList.add('open'); setTimeout(() => $('eventName').focus(), 80);
+    }
+    function closeModal() { $('modalBackdrop').classList.remove('open'); editingId = null; editingDateKey = null; }
+
+    function updateRepeatControls() {
+      const repeat = $('eventRepeat').value, isRepeating = repeat !== 'none';
+      $('repeatExtra').classList.toggle('hidden', !isRepeating);
+      $('repeatDayActions').classList.toggle('hidden', !editingId || !isRepeating);
+      $('repeatDayActions').querySelectorAll('.repeat-choice').forEach(button => button.classList.toggle('selected', button.dataset.repeatMode === repeat));
+    }
+    $('eventRepeat').addEventListener('change', updateRepeatControls);
+    $('eventColor').addEventListener('input', () => { pickedColor = true; $('colorHint').textContent = 'Custom color selected.'; });
+    $('repeatDayActions').querySelectorAll('.repeat-choice').forEach(button => button.addEventListener('click', () => { $('eventRepeat').value = button.dataset.repeatMode; updateRepeatControls(); }));
+    $('eventForm').addEventListener('submit', e => { e.preventDefault(); const repeat = $('eventRepeat').value; const current = editingId ? events.find(item => item.id === editingId) : null; const chosenColor = pickedColor ? $('eventColor').value : (current?.color || colors[Math.floor(Math.random() * colors.length)]); const payload = { name: $('eventName').value.trim(), date: $('eventDate').value, time: $('eventTime').value, repeat, until: repeat === 'none' ? '' : $('repeatUntil').value, skipDates: current?.skipDates || [], color: chosenColor }; if (!payload.name || !payload.date || !payload.time) return; if (editingId) Object.assign(current, payload); else events.push({ id: Date.now(), ...payload }); localStorage.setItem(storageKey, JSON.stringify(events)); closeModal(); renderCalendar(); });
+    $('deleteEvent').addEventListener('click', () => { if (editingId) { events = events.filter(event => event.id !== editingId); localStorage.setItem(storageKey, JSON.stringify(events)); closeModal(); renderCalendar(); } });
+    $('deleteOne').addEventListener('click', () => { const event = events.find(item => item.id === editingId); if (!event) return; event.skipDates = [...new Set([...(event.skipDates || []), editingDateKey])]; localStorage.setItem(storageKey, JSON.stringify(events)); closeModal(); renderCalendar(); });
+    $('deleteFuture').addEventListener('click', () => { const event = events.find(item => item.id === editingId); if (!event) return; const target = dateFromKey(editingDateKey); target.setDate(target.getDate() - 1); event.until = dateKey(target); localStorage.setItem(storageKey, JSON.stringify(events)); closeModal(); renderCalendar(); });
+    $('closeModal').addEventListener('click', closeModal); $('modalBackdrop').addEventListener('click', e => { if (e.target === $('modalBackdrop')) closeModal(); });
+    $('closeDayEvents').addEventListener('click', closeDayEvents); $('dayEventsBackdrop').addEventListener('click', e => { if (e.target === $('dayEventsBackdrop')) closeDayEvents(); });
+    $('shareButton').addEventListener('click', openShareModal); $('closeShare').addEventListener('click', closeShareModal); $('shareBackdrop').addEventListener('click', e => { if (e.target === $('shareBackdrop')) closeShareModal(); }); $('generateShare').addEventListener('click', generateShareLink); $('copyShare').addEventListener('click', copyShareLink);
+    $('newEventButton').addEventListener('click', () => openModal(dateKey(today))); $('todayButton').addEventListener('click', () => { viewDate = new Date(today.getFullYear(), today.getMonth(), 1); renderCalendar(); });
+    $('prevMonth').addEventListener('click', () => { viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth()-1, 1); renderCalendar(); }); $('nextMonth').addEventListener('click', () => { viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth()+1, 1); renderCalendar(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); closeDayEvents(); closeShareModal(); } });
+    renderCalendar();
+  </script>
+</body>
+</html>
